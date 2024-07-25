@@ -325,7 +325,14 @@ module Prismic
             response.body
           else
             body = JSON.load(response.body) rescue nil
-            error = body.is_a?(Hash) ? body['error'] : response.body
+            is_hash = body.is_a?(Hash)
+            error = if is_hash && body['error']
+              body['error']
+            elsif is_hash && body['message']
+              body['message']
+            else
+              body
+            end
             raise AuthenticationException, error if response.code.to_s == '401'
             raise AuthorizationException, error if response.code.to_s == '403'
             raise RefNotFoundException, error if response.code.to_s == '404'
